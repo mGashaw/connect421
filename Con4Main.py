@@ -3,11 +3,14 @@ Handles the setting up and client interaction as well as the main game loop of c
 '''
 
 import pygame as pg
-import Con4Engine
+from Con4Engine import GameState as gs
+from Con4Engine import BasicAI
 
-WIDTH = HEIGHT = 512
-DIMENSION = 8
-SQ_SIZE = HEIGHT // DIMENSION
+WIDTH = 700
+HEIGHT = 600
+ROWS = 6
+COLUMNS = 7
+SQ_SIZE = HEIGHT // ROWS
 MAX_FPS = 15
 
 '''
@@ -18,62 +21,62 @@ def main():
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     clock = pg.time.Clock()
 
-    state = Con4Engine.GameState()
-    ai = Con4Engine.BasicAI()
+    ai = BasicAI()
 
     running = True
-    playerTurn = True
+    player_turn = True
     while running:
-        if playerTurn:
+        if player_turn:
             for e in pg.event.get():
                 if e.type == pg.QUIT:
                     running = False
                 elif e.type == pg.MOUSEBUTTONDOWN:
                     location = pg.mouse.get_pos()
                     col = location[0] // SQ_SIZE
-                    row = location[1] // SQ_SIZE
-                    if state.makeMove(row, col, "R"):
-                        # If not valid move just repeats
-                        playerTurn = False
+                    if gs.is_valid_move(col):
+                        gs.make_move(col, -1)
+                        player_turn = False
         else:
             # Ai makes move
-            ai.move(state)
-            playerTurn = True
+            ai.move()
+            player_turn = True
 
-        updateGameState(screen, state.board)
+        update_game_state(screen)
 
         # Check winner
-        winner = state.checkForWinner()
+        winner = gs.check_for_winner()
         if winner:
+            if winner == 1:
+                winner = "AI"
+            else:
+                winner = "Player"
             print("Winner: " + winner)
             running = False
 
         clock.tick(MAX_FPS)
         pg.display.flip()
 
-def updateGameState(screen, board): 
-    drawBoard(screen)
-    drawPieces(screen, board)
+def update_game_state(screen): 
+    draw_board(screen)
+    draw_pieces(screen)
 
-def drawBoard(screen):
-    for r in range(DIMENSION):
-        for c in range(DIMENSION):
-            pg.draw.rect(screen, pg.Color("Grey"), pg.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
-            pg.draw.rect(screen, pg.Color("Black"), pg.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE), 2)
+def draw_board(screen):
+    for r in range(ROWS):
+        for c in range(COLUMNS):
+            pg.draw.rect(screen, pg.Color("Grey"), pg.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
+            pg.draw.rect(screen, pg.Color("Black"), pg.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE), 2)
 
-def drawPieces(screen, board):
-    for r in range(DIMENSION):
-        for c in range(DIMENSION):
+def draw_pieces(screen):
+    for r in range(ROWS):
+        for c in range(COLUMNS):
             color = None
-            cellValue = board[r][c]
-            if cellValue == 'R':
+            cell_value = gs.board[r][c]
+            if cell_value == -1:
                 color = (255, 0, 0)
-            elif cellValue == 'B':
+            elif cell_value == 1:
                 color = (0, 0, 255)
             else:
                 continue
 
             pg.draw.circle(screen, color, (c * SQ_SIZE + (SQ_SIZE / 2), r * SQ_SIZE + (SQ_SIZE / 2)), 25)
 main()
-
-
