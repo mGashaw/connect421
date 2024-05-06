@@ -1,4 +1,5 @@
-import random
+
+from Con4Networks import AIEvaluator
 
 '''
 Responsible for keeping track of the current games state. 
@@ -74,21 +75,32 @@ class GameState():
     
 
 class BasicAI():
-    MAX_DEPTH = 5
 
-    def __init__(self):
-        #TO-DO: Get neural network init and trained here
+    def __init__(self, max_depth):
         self.value = 1
+        self.max_depth = max_depth # main factor of how intelligent our AI is
+
+        # Instantializing up NN
+        eval = AIEvaluator()
+        eval.load_data()
+        eval.train()
+        self.evaluator = eval
 
     '''
     Sends current board state to neural network and gets evaluation back.
     '''
-    def evaluate_board(self):
-        return random.randint(-100, 100) # Connecting neural network here is the last part
+    def evaluate_board(self, board):
+        # Re-sizing board to match shape of Neural Network input
+        flatten_board = []
+        for sub_arr in board:
+            for item in sub_arr:
+                flatten_board.append(item)
+
+        return self.evaluator.evaluate_pos(flatten_board)
 
     def minimax(self, depth, player):
         if depth == 0 or GameState.is_finished():
-            return self.evaluate_board()
+            return self.evaluate_board(GameState.board)
 
         # Maximizing
         if player == 1:
@@ -123,7 +135,7 @@ class BasicAI():
             # Sends each valid move into minimax
             if GameState.is_valid_move(col):
                 row = GameState.make_move(col, self.value)
-                score = self.minimax(BasicAI.MAX_DEPTH - 1, self.value * -1)
+                score = self.minimax(self.max_depth - 1, self.value * -1)
                 GameState.undo_move(row, col)
                 # Keep track of best score and col
                 if score > max_score:
