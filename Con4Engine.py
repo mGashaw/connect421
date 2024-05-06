@@ -100,6 +100,12 @@ class BasicAI():
 
     def minimax(self, depth, player):
         if depth == 0 or GameState.is_finished():
+            # If winner reward is different then if board has no winner
+            winner = GameState.check_for_winner()
+            if winner and winner == 1:
+                return 10000000
+            elif winner and winner == -1:
+                return -10000000
             return self.evaluate_board(GameState.board)
 
         # Maximizing
@@ -143,3 +149,4 @@ class BasicAI():
                     max_score = score
 
         GameState.make_move(chosen_col, self.value)
+        print(max_score)
