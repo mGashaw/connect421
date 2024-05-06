@@ -13,6 +13,10 @@ COLUMNS = 7
 SQ_SIZE = HEIGHT // ROWS
 MAX_FPS = 15
 
+DUMB = 1
+MID = 5
+ALBERT = 10
+
 '''
 Main driver handles input and updating graphics
 '''
@@ -21,7 +25,7 @@ def main():
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     clock = pg.time.Clock()
 
-    ai = BasicAI()
+    ai = BasicAI(ALBERT)
 
     running = True
     player_turn = True
