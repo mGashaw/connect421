@@ -40,7 +40,7 @@ This project implements an AI to play Connect-4 using a neural network to evalua
 Before playing against the AI, ensure that the neural network model is trained:
 
   1. Run Con4Train
-  ```bash
-  python3 Con4Train.py
-  ```
+     ```bash
+     python3 Con4Train.py
+     ```
 This will train the neural network and save the model's state for use by the game AI.
