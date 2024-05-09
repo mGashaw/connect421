@@ -1,5 +1,5 @@
-
-from Con4Networks import AIEvaluator
+import torch
+from Con4Train import NN
 
 '''
 Responsible for keeping track of the current games state. 
@@ -29,7 +29,8 @@ class GameState():
         return -1 # Theoretically will never be reached
     
     '''
-    Checks for winner, probably isnt the most optimal can revist later.
+    Checks for winner
+    Returns the value of winner
     '''
     def check_for_winner():
         rows, cols = len(GameState.board), len(GameState.board[0])
@@ -80,15 +81,17 @@ class BasicAI():
     def __init__(self, max_depth):
         self.value = 1
         self.max_depth = max_depth # main factor of how intelligent our AI is
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        # Instantializing up NN
-        eval = AIEvaluator()
-        eval.load_data()
-        eval.train()
-        self.evaluator = eval
+        # Loading in our trained model
+        model = NN(42, 3).to(self.device)
+        state_dict = torch.load('c4_model.pth')
+        model.load_state_dict(state_dict)
+
+        self.model = model
 
     '''
-    Sends current board state to neural network and gets evaluation back.
+    Utilize the model to get an evaluation of the passed boards state
     '''
     def evaluate_board(self, board):
         # Re-sizing board to match shape of Neural Network input
@@ -97,8 +100,28 @@ class BasicAI():
             for item in sub_arr:
                 flatten_board.append(item)
 
-        return self.evaluator.evaluate_pos(flatten_board)
+        board_tensor = torch.tensor(flatten_board, dtype=torch.float32).unsqueeze(0)  # Add batch dimension
+        board_tensor = board_tensor.to(self.device)  # Send tensor to the correct device
+        
+        with torch.no_grad():
+            score = self.model(board_tensor).tolist()[0] # Getting mdoel's predictions
+            true_score = max(score)
+            index = score.index(true_score) # Gets index which is the class the model put this board into
+            
+            # Labels: -1 0 1 correspond to Indices: 0 1 2
+            if index == 2:
+                return true_score 
+            elif index == 0:
+                return -1 * true_score # To keep in line with the minimax alg
+            else:
+                return 0
 
+    '''
+    Main search algorithm of our AI. Paired with our neural network it looks for the optimal
+    move with a pre-determined depth. 
+
+    Returns the score of a given move.
+    '''
     def minimax(self, depth, player):
         if depth == 0 or GameState.is_finished():
             # If winner reward is different then if board has no winner
