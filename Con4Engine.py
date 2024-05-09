@@ -66,10 +66,11 @@ class GameState():
             return True
         
         # Check if board is filled
+        is_full = True
         for col in range(7):
             if GameState.is_valid_move(col):
-                return True
-        return False
+                is_full = False
+        return is_full
     
         
     
@@ -102,10 +103,12 @@ class BasicAI():
         if depth == 0 or GameState.is_finished():
             # If winner reward is different then if board has no winner
             winner = GameState.check_for_winner()
-            if winner and winner == 1:
-                return 10000000
-            elif winner and winner == -1:
-                return -10000000
+            if winner:
+                psuedo_decay = 1 / (self.max_depth - depth) # in order to prioritize immediate wins
+                if winner == 1:
+                    return 10000000 * psuedo_decay  
+                elif winner == -1:
+                    return -10000000 * psuedo_decay  
             return self.evaluate_board(GameState.board)
 
         # Maximizing
@@ -142,6 +145,7 @@ class BasicAI():
             if GameState.is_valid_move(col):
                 row = GameState.make_move(col, self.value)
                 score = self.minimax(self.max_depth - 1, self.value * -1)
+
                 GameState.undo_move(row, col)
                 # Keep track of best score and col
                 if score > max_score:
@@ -149,4 +153,3 @@ class BasicAI():
                     max_score = score
 
         GameState.make_move(chosen_col, self.value)
-        print(max_score)
