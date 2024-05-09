@@ -44,3 +44,11 @@ Before playing against the AI, ensure that the neural network model is trained:
      python3 Con4Train.py
      ```
 This will train the neural network and save the model's state for use by the game AI.
+
+### Launch the Game
+To start the game, run the Con4Main.py script after training the AI:
+
+  1. Run Con4Train
+     ```bash
+     python3 Con4Main.py
+     ```
