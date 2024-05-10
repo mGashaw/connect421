@@ -60,6 +60,10 @@ def main():
             pg.time.delay(3500) # Give player a chance to see winning move
             running = False
 
+        # Check for draw
+        if gs.is_finished():
+            running = False
+            
         clock.tick(MAX_FPS)
         pg.display.flip()
 
