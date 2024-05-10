@@ -94,7 +94,9 @@ if __name__ == '__main__':
         for idx, (data, labels) in enumerate(train_loader):
             data = data.to(device)
             labels = labels.to(device).long().squeeze()
-
+            
+            # labels[labels == -9223372036854775808] = 0 <- uncomment on windows!!
+            
             optimizer.zero_grad()
 
             # forward prop
@@ -112,5 +114,3 @@ if __name__ == '__main__':
 
     # Saving model
     torch.save(model.state_dict(), 'c4_model.pth')
-
-
